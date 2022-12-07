@@ -10,10 +10,12 @@ import java.net.UnknownHostException;
  */
 public class NetWorkTest {
     public static void main(String[] args) throws UnknownHostException {
-        InetAddress address = InetAddress.getByName("192.168.1.128");
+        InetAddress address = InetAddress.getLocalHost();
 
-//        String hostName = address.getHostName();
-//        System.out.println("主机名为" + hostName);
+//        String hostAddress = InetAddress.getLocalHost().getHostAddress();
+//        System.out.println(hostAddress);
+        String hostName = address.getHostName();
+        System.out.println("主机名为" + hostName);
 
         String ip = address.getHostAddress();
         System.out.println("IP为" + ip);

@@ -1,20 +1,20 @@
+package context;
 
 import application.ApplicationServer;
 import manager.ResourceManager;
 import manager.impl.CircleResourceManager;
 import scheduler.Scheduler;
 import scheduler.impl.RRScheduler;
-import structure.Address;
 import structure.Node;
-import structure.SubNets;
-import structure.type.TransmitPackage;
-import structure.type.TransmitType;
+import structure.SubNet;
+
 import transmit.Receiver;
 import transmit.Sender;
 import transmit.impl.UDPReceiver;
 import transmit.impl.UDPSender;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -26,14 +26,14 @@ import java.util.Map;
 public class PlatformContext {
     private static final PlatformContext context = new PlatformContext();
 
-    private ResourceManager manager;
+    public ResourceManager manager;
     public Scheduler scheduler;
     public Sender sender;
     public Receiver receiver;
     public ApplicationServer worker;
 
-    public List<Map<Integer, SubNets>> network;  // this network
-    public Node self;       // self node
+    public Map<Integer, SubNet> network;  // this network
+    public Node selfNode;       // self node
 
     public static PlatformContext getInstance() {
         return context;
@@ -61,8 +61,7 @@ public class PlatformContext {
         scheduler = new RRScheduler();
         manager = new CircleResourceManager();
         worker = new ApplicationServer();
-        network = new ArrayList<>();
+        network = new HashMap<>();
     }
-
 
 }

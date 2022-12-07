@@ -10,4 +10,5 @@ import structure.type.TransmitPackage;
  */
 public interface Sender{
     void send(Address address, TransmitPackage transmitPackage);
+    void boardCast(TransmitPackage transmitPackage);
 }

@@ -1,8 +1,14 @@
 package transmit.impl;
 
+import context.PlatformContext;
+import structure.type.NetsMaintainPackage;
+import structure.type.TransmitPackage;
+
 import transmit.Receiver;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
@@ -13,35 +19,48 @@ import java.net.SocketException;
  * @Description: TODO
  */
 public class UDPReceiver implements Receiver {
-    private int port = 10000;
-    private int packageSize = 1024; // size: Byte
-    DatagramSocket socket;
-    @Override
-    public void run() {
+    private final int port = 10000;
+    private final int packageSize = 10240; // size: Byte
+    private DatagramSocket socket;
+    private final PlatformContext context;
+
+    public UDPReceiver(){
+        context = PlatformContext.getInstance();
         try {
             socket = new DatagramSocket(port);
         } catch (SocketException e) {
             e.printStackTrace();
         }
+    }
 
+    @Override
+    public void run() {
         System.out.println("UDPServer running!");
-
+        byte [] bytes = new byte[packageSize];
+        DatagramPacket packet = new DatagramPacket(bytes,bytes.length);
         while (true) {
-            byte [] bytes = new byte[packageSize];
-            DatagramPacket dp = new DatagramPacket(bytes,bytes.length);
-
             try {
-                socket.receive(dp);
-            } catch (IOException e) {
+                socket.receive(packet);
+                ObjectInputStream objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes,0, packet.getLength()));
+                TransmitPackage transmitPackage = (TransmitPackage) objectStream.readObject();
+                distribute(transmitPackage);
+            } catch (Exception e) {
                 e.printStackTrace();
             }
-
-            byte[] data = dp.getData();
-            int length = dp.getLength();
-
-            System.out.println(new String(data,0,length));
         }
 
+    }
+
+    /**
+     * according the TransmitType to distribute different queue
+     * @param dp
+     */
+    private void distribute(TransmitPackage dp) {
+        switch (dp.getType()){
+            case NetsMaintain: context.manager.offer((NetsMaintainPackage) dp.getBody());
+            case TaskUndo:;
+            case TaskDone:;
+        }
     }
 
 }

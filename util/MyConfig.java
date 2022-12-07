@@ -1,7 +1,11 @@
 package util;
 
+import structure.Address;
+
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
 
 /**
@@ -11,12 +15,24 @@ import java.util.Properties;
  */
 public class MyConfig {
     private static Properties config = new Properties();
+    public static Address myAddress = new Address();
     static {
         try {
             String filename = "config.properties";
             config.load(new FileInputStream(MyUtils.getResPath(filename)));
         } catch (IOException e) {
             e.printStackTrace();
+        }
+
+        // set localhost IP
+        if ("auto".equals(config.getProperty("getAddressMode"))){
+            try {
+                myAddress.setIp(InetAddress.getLocalHost().getHostAddress());
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            }
+        }else {
+            myAddress.setIp(config.getProperty("address"));
         }
     }
 
