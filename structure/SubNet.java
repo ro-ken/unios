@@ -30,7 +30,7 @@ public class SubNet implements Serializable {
 
     public void addNode(Node node){
         nodeList.add(node);
-        System.err.println("nodeNo:"+node.getNo()+"is added. ip="+node.getAddress());
+        System.out.println("nodeNo:"+node.getNo()+"is added. ip="+node.getAddress());
     }
 
     public List<Node> getNodeList() {
@@ -49,6 +49,6 @@ public class SubNet implements Serializable {
                 break;
             }
         }
-        System.err.println("nodeNo:"+nodeNo+"is removed");
+        System.out.println("nodeNo:"+nodeNo+"is removed");
     }
 }

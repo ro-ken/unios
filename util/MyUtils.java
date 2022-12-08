@@ -1,5 +1,6 @@
 package util;
 
+import structure.Address;
 import structure.Node;
 import structure.SubNet;
 
@@ -7,6 +8,11 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.UnknownHostException;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,5 +60,37 @@ public class MyUtils {
             sb.append("[").append(node.getNo()).append(":").append(ip.substring(ip.lastIndexOf('.')+1)).append("]->");
         }
         System.out.println(sb);
+    }
+
+
+    public static Address getHostIp(){
+        Address address = null;
+        try{
+            InetAddress ip = InetAddress.getLocalHost();
+            if (!ip.isLoopbackAddress()){
+                address = new Address(ip.getHostAddress());
+            }else{
+                Enumeration<NetworkInterface> allNetInterfaces = NetworkInterface.getNetworkInterfaces();
+                while (allNetInterfaces.hasMoreElements()){
+                    NetworkInterface netInterface = (NetworkInterface) allNetInterfaces.nextElement();
+                    Enumeration<InetAddress> addresses = netInterface.getInetAddresses();
+                    while (addresses.hasMoreElements()){
+                        ip = (InetAddress) addresses.nextElement();
+                        //ip doesn't belong to 127.0.0.0 ~ 127.255.255.255
+                        if (ip instanceof Inet4Address && !ip.isLoopbackAddress() && !ip.getHostAddress().contains(":")){
+                            address = new Address(ip.getHostAddress());
+                        }
+                    }
+                }
+            }
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+        if (address == null){
+            System.out.println("could not find local address!");
+        }else{
+            System.out.println("find address : "+ address.getIp());
+        }
+        return address;
     }
 }

@@ -4,8 +4,6 @@ import structure.Address;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.Properties;
 
 /**
@@ -15,7 +13,7 @@ import java.util.Properties;
  */
 public class MyConfig {
     private static Properties config = new Properties();
-    public static Address myAddress = new Address();
+    public static Address myAddress ;
     static {
         try {
             String filename = "config.properties";
@@ -26,13 +24,9 @@ public class MyConfig {
 
         // set localhost IP
         if ("auto".equals(config.getProperty("getAddressMode"))){
-            try {
-                myAddress.setIp(InetAddress.getLocalHost().getHostAddress());
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            }
+            myAddress = MyUtils.getHostIp();
         }else {
-            myAddress.setIp(config.getProperty("address"));
+            myAddress= new Address(config.getProperty("address"));
         }
     }
 

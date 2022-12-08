@@ -44,12 +44,15 @@ public class UDPReceiver implements Receiver {
                 socket.receive(packet);
                 ObjectInputStream objectStream = new ObjectInputStream(new ByteArrayInputStream(bytes,0, packet.getLength()));
                 TransmitPackage transmitPackage = (TransmitPackage) objectStream.readObject();
-                distribute(transmitPackage);
+                if (!transmitPackage.getSrc().equals(MyConfig.myAddress)) {  // filtrate the package to send by self{
+                    distribute(transmitPackage);
+                    if ("true".equals(MyConfig.get("printAllTransmitPackage")))
+                        System.out.println("RECV:"+transmitPackage);
+                }
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
-
     }
 
     /**
@@ -58,9 +61,9 @@ public class UDPReceiver implements Receiver {
      */
     private void distribute(TransmitPackage dp) {
         switch (dp.getType()){
-            case NetsMaintain: context.manager.offer((NetsMaintainPackage) dp.getBody());
-            case TaskUndo:;
-            case TaskDone:;
+            case NetsMaintain: context.manager.offer((NetsMaintainPackage) dp.getBody()); break;
+            case TaskUndo:;  break;
+            case TaskDone:;   break;
         }
     }
 

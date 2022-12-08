@@ -1,5 +1,7 @@
 package structure.type;
 
+import structure.Address;
+
 import java.io.*;
 
 /**
@@ -9,8 +11,19 @@ import java.io.*;
  */
 public class TransmitPackage implements Serializable {
     private static final long serialVersionUID = 1L;
+
+    private Address src;
     private TransmitType type;
+
+    public void setSrc(Address src) {
+        this.src = src;
+    }
+
     private Object body;
+
+    public Address getSrc() {
+        return src;
+    }
 
     public TransmitType getType() {
         return type;
@@ -28,8 +41,9 @@ public class TransmitPackage implements Serializable {
     @Override
     public String toString() {
         return "TransmitPackage{" +
-                "type=" + type +
-                ", body='" + body + '\'' +
+                "src=" + src +
+                ", type=" + type +
+                ", body=" + body +
                 '}';
     }
 

@@ -4,6 +4,7 @@ import context.PlatformContext;
 import structure.Address;
 import structure.type.TransmitPackage;
 import transmit.Sender;
+import util.MyConfig;
 
 import java.io.IOException;
 import java.net.*;
@@ -33,10 +34,13 @@ public class UDPSender implements Sender {
     }
 
     private void _send(InetAddress inetAddress, TransmitPackage transmitPackage){
+        transmitPackage.setSrc(MyConfig.myAddress);
         byte[] bytes = transmitPackage.getBytes();
         DatagramPacket dp = new DatagramPacket(bytes,bytes.length,inetAddress,port);
         try {
             socket.send(dp);
+            if ("true".equals(MyConfig.get("printAllTransmitPackage")))
+                System.out.println("SEND:"+transmitPackage);
         } catch (IOException e) {
             e.printStackTrace();
         }

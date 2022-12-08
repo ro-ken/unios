@@ -12,11 +12,8 @@ import structure.type.TransmitType;
 import util.MyConfig;
 import util.MyUtils;
 
-import javax.rmi.CORBA.Util;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Timer;
 
 /**
  * @Author: ro_kin
@@ -105,8 +102,8 @@ public class CircleResourceManager extends ResourceManager {
                 disposePackage(netsMaintainPackage);
             }
             if (preNode != null && nextNode !=null){
-                whetherNextNodeDead();
                 SelfIsAlive();
+                whetherNextNodeDead();
             }
             // thread take a break
             MyUtils.sleep(threadSleepTime);
@@ -141,13 +138,13 @@ public class CircleResourceManager extends ResourceManager {
 
     private void disposePackage(NetsMaintainPackage pkg) {
         switch (pkg.getType()){
-            case Discover:disposeDiscover(pkg.getBody());
-            case DiscoverAck:disposeDiscoverAck(pkg.getBody());
-            case Join:disposeJoin(pkg.getBody());
-            case JoinAck:disposeJoinAck(pkg.getBody());
-            case Heart:disposeHeart(pkg.getBody());
-            case NodeAdd:disposeNodeAdd(pkg.getBody());
-            case NodeDel:disposeNodeDel(pkg.getBody());
+            case Discover:disposeDiscover(pkg.getBody());  break;
+            case DiscoverAck:disposeDiscoverAck(pkg.getBody());  break;
+            case Join:disposeJoin(pkg.getBody());   break;
+            case JoinAck:disposeJoinAck(pkg.getBody());  break;
+            case Heart:disposeHeart(pkg.getBody());   break;
+            case NodeAdd:disposeNodeAdd(pkg.getBody());  break;
+            case NodeDel:disposeNodeDel(pkg.getBody());  break;
         }
     }
 
@@ -169,7 +166,7 @@ public class CircleResourceManager extends ResourceManager {
     private void disposeHeart(Object body) {
         Address address = (Address) body;
         // should judge whether address is nextNode
-        if (!address.equals(context.selfNode.getAddress())){
+        if (!address.equals(nextNode.getAddress())){
             System.err.println(address + "should not send to me!");
             System.err.println(nextNode.getAddress() + "is my next Node!");
         }
@@ -180,6 +177,7 @@ public class CircleResourceManager extends ResourceManager {
     }
 
     private void disposeJoinAck(Object body) {
+        System.out.println(body);
         SubNet subNet = (SubNet) body;
         this.subNet = subNet;
         context.network.put(subNet.getNo(),subNet);
@@ -190,7 +188,7 @@ public class CircleResourceManager extends ResourceManager {
     // group SAP dispose Join pkg to allow the node join
     private void disposeJoin(Object body) {
         int nextNo = subNet.getSubNextNo();
-        Node node = new Node(nextNo,1,new Address((String) body));
+        Node node = new Node(nextNo,1, (Address) body);
         subNet.addNode(node); // add to node list
 
         // board cast new node to all nodes
@@ -234,7 +232,7 @@ public class CircleResourceManager extends ResourceManager {
 
     // group candidate dispose SAP discoverACK pkg to join the group
     private void disposeDiscoverAck(Object body) {
-        Address address = new Address((String) body);   // group SAP address
+        Address address = (Address) body;   // group SAP address
         NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Join, MyConfig.myAddress);
         TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
         context.sender.send(address,transmitPackage);  // send to target address self address
@@ -244,7 +242,7 @@ public class CircleResourceManager extends ResourceManager {
     // group SAP dispose discover pkg
     private void disposeDiscover(Object body) {
         if (context.selfNode != null){
-            Address address = new Address((String) body);  // the candidate address
+            Address address = (Address) body;  // the candidate address
             NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.DiscoverAck, MyConfig.myAddress);
             TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
             context.sender.send(address,transmitPackage);  // send to target address self address
