@@ -5,6 +5,7 @@ import structure.type.NetsMaintainPackage;
 import structure.type.TransmitPackage;
 
 import transmit.Receiver;
+import util.MyConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -35,7 +36,7 @@ public class UDPReceiver implements Receiver {
 
     @Override
     public void run() {
-        System.out.println("UDPServer running!");
+        System.out.println("UDPServer running! + ip =" + MyConfig.myAddress);
         byte [] bytes = new byte[packageSize];
         DatagramPacket packet = new DatagramPacket(bytes,bytes.length);
         while (true) {

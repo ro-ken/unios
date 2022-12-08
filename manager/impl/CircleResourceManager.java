@@ -10,7 +10,9 @@ import structure.type.NetsMaintainType;
 import structure.type.TransmitPackage;
 import structure.type.TransmitType;
 import util.MyConfig;
+import util.MyUtils;
 
+import javax.rmi.CORBA.Util;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +39,6 @@ public class CircleResourceManager extends ResourceManager {
     private Node nextNode;
 
 
-
     public CircleResourceManager() {
         context = PlatformContext.getInstance();
     }
@@ -45,12 +46,9 @@ public class CircleResourceManager extends ResourceManager {
     @Override
     public void run() {
         System.out.println("CircleResourceManager running!");
+
         nodeDiscovery(); // boadCast self to find neighbor
-        try {
-            Thread.sleep(discoveryWaitTime);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        MyUtils.sleep(discoveryWaitTime);   // take a break wait other discovery ack package
         addToNets();  //  add to network group
         netsMaintenance();  // make the nets keepAlive
     }
@@ -95,6 +93,9 @@ public class CircleResourceManager extends ResourceManager {
         SubNet subNet = new SubNet(netNo,lists);
         this.subNet = subNet;
         context.network.put(netNo,subNet);
+
+        System.out.println("create a new network");
+        MyUtils.printAllNodes(subNet);
     }
 
     private void netsMaintenance() {
@@ -108,27 +109,28 @@ public class CircleResourceManager extends ResourceManager {
                 SelfIsAlive();
             }
             // thread take a break
-            try {
-                Thread.sleep(threadSleepTime);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            MyUtils.sleep(threadSleepTime);
         }
     }
 
     // send a heartbeat pkg to preNode indicate I am alive
     private void SelfIsAlive() {
         if (System.currentTimeMillis() - lastSendHeartBeatTime >= heartbeatInterval){
-            Address address = context.selfNode.getAddress();
+            Address address = nextNode.getAddress();
             NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Heart, MyConfig.myAddress);
             TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
             context.sender.send(address,transmitPackage);  // send to nextNode address heartbeat
             updateSendHeartBeatTime();
+
+            if ("true".equals(MyConfig.get("printHeartBeat"))){
+                System.out.println("send heartbeat :" + address);
+            }
         }
     }
 
     private void whetherNextNodeDead() {
         if (System.currentTimeMillis() - lastGetHeartBeatTime > nodeDeadInterval){
+
             subNet.remove(nextNode.getNo());
             NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.NodeDel, nextNode.getNo());
             TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
@@ -157,9 +159,11 @@ public class CircleResourceManager extends ResourceManager {
     }
 
     private void disposeNodeAdd(Object body) {
-        Node node = (Node) body;
-        subNet.addNode(node);
-        updatePreNextNode();
+        if (context.selfNode != null){
+            Node node = (Node) body;
+            subNet.addNode(node);
+            updatePreNextNode();
+        }
     }
 
     private void disposeHeart(Object body) {
@@ -170,6 +174,9 @@ public class CircleResourceManager extends ResourceManager {
             System.err.println(nextNode.getAddress() + "is my next Node!");
         }
         updateGetHeartBeatTime();
+        if ("true".equals(MyConfig.get("printHeartBeat"))){
+            System.out.println("get heartbeat :" + address);
+        }
     }
 
     private void disposeJoinAck(Object body) {
@@ -221,9 +228,9 @@ public class CircleResourceManager extends ResourceManager {
 
             updateGetHeartBeatTime();
             updateSendHeartBeatTime();
+            MyUtils.printAllNodes(subNet);
         }
     }
-
 
     // group candidate dispose SAP discoverACK pkg to join the group
     private void disposeDiscoverAck(Object body) {
@@ -231,14 +238,18 @@ public class CircleResourceManager extends ResourceManager {
         NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Join, MyConfig.myAddress);
         TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
         context.sender.send(address,transmitPackage);  // send to target address self address
+        System.out.println("Join to :"+address);
     }
 
     // group SAP dispose discover pkg
     private void disposeDiscover(Object body) {
-        Address address = new Address((String) body);  // the candidate address
-        NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.DiscoverAck, MyConfig.myAddress);
-        TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
-        context.sender.send(address,transmitPackage);  // send to target address self address
+        if (context.selfNode != null){
+            Address address = new Address((String) body);  // the candidate address
+            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.DiscoverAck, MyConfig.myAddress);
+            TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
+            context.sender.send(address,transmitPackage);  // send to target address self address
+            System.out.println("disposeDiscover:"+address);
+        }
     }
 
     // node board cast self address
@@ -246,6 +257,7 @@ public class CircleResourceManager extends ResourceManager {
         NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Discover, MyConfig.myAddress);
         TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
         context.sender.boardCast(transmitPackage);  // board cast self address
+        System.out.println("nodeDiscovery");
     }
 
 }

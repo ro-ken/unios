@@ -10,8 +10,8 @@ public class Test {
     public static PlatformContext context;
     public static void main(String[] args) throws IOException {
         context = PlatformContext.getInstance();
-        String manager = MyConfig.get("manager");
-        System.out.println(manager);
+//        String manager = MyConfig.get("manager");
+//        System.out.println(manager);
         context.run();
 //        udpTest();
     }

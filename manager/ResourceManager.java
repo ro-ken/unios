@@ -29,6 +29,8 @@ public abstract class ResourceManager implements Runnable {
         return packageQueue.peek();
     }
 
-
+    protected void clear(){
+        packageQueue.clear();
+    }
 
 }

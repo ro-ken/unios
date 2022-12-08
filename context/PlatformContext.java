@@ -12,7 +12,9 @@ import transmit.Receiver;
 import transmit.Sender;
 import transmit.impl.UDPReceiver;
 import transmit.impl.UDPSender;
+import util.MyUtils;
 
+import javax.rmi.CORBA.Util;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,7 +41,10 @@ public class PlatformContext {
         return context;
     }
 
-    private PlatformContext(){}
+    // single pattern should have empty method body , insure this instance be created quickly
+    private PlatformContext(){
+        MyUtils.printLOGO();
+    }
 
     /**
      *
