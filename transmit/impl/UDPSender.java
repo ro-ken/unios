@@ -30,11 +30,13 @@ public class UDPSender implements Sender {
     @Override
     public void send(Address address, TransmitPackage transmitPackage) {
         InetAddress inetAddress = address.toInetAddress();
+
         _send(inetAddress,transmitPackage);
     }
 
     private void _send(InetAddress inetAddress, TransmitPackage transmitPackage){
         transmitPackage.setSrc(MyConfig.myAddress);
+        transmitPackage.setDest(new Address(inetAddress.getHostAddress()));
         byte[] bytes = transmitPackage.getBytes();
         DatagramPacket dp = new DatagramPacket(bytes,bytes.length,inetAddress,port);
         try {

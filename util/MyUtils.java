@@ -30,7 +30,7 @@ public class MyUtils {
         return root + res;
     }
 
-//    public static get
+
     public static void sleep(long time){
         try {
             Thread.sleep(time);
@@ -56,8 +56,7 @@ public class MyUtils {
         sb.append("netNo:").append(subNet.getNo()).append(":");
         List<Node> nodeList = subNet.getNodeList();
         for (Node node:nodeList){
-            String ip = node.getAddress().getIp();
-            sb.append("[").append(node.getNo()).append(":").append(ip.substring(ip.lastIndexOf('.')+1)).append("]->");
+            sb.append("[").append(node.getNo()).append(":").append(node.getAddress().getLastAddr()).append("]<-");
         }
         System.out.println(sb);
     }

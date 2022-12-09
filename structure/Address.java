@@ -32,6 +32,9 @@ public class Address implements Serializable {
         return "Address[" + ip  + ']';
     }
 
+    public String getLastAddr() {
+        return ip.substring(ip.lastIndexOf('.')+1);
+    }
     public Address(){
 
     }

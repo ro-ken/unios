@@ -31,7 +31,7 @@ public class CircleResourceManager extends ResourceManager {
 
     private SubNet subNet;
 
-    // heart pkg flow anticlockwise : nextNode -> this -> preNode
+    // heart pkg flow anticlockwise : preNode <- this <- preNode
     private Node preNode;
     private Node nextNode;
 
@@ -125,13 +125,15 @@ public class CircleResourceManager extends ResourceManager {
         }
     }
 
+    // to judge whether the next node is dead or not
     private void whetherNextNodeDead() {
         if (System.currentTimeMillis() - lastGetHeartBeatTime > nodeDeadInterval){
-
-            subNet.remove(nextNode.getNo());
-            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.NodeDel, nextNode.getNo());
+            System.out.println(nextNode + " is dead !");
+            int no = nextNode.getNo();
+            subNet.remove(no);
+            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.NodeDel, no);
             TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
-            context.sender.boardCast(transmitPackage);  // board cast self address
+            context.sender.boardCast(transmitPackage);  // board cast dead node no
             updatePreNextNode();
         }
     }

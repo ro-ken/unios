@@ -13,10 +13,15 @@ public class TransmitPackage implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private Address src;
+    private Address dest;
     private TransmitType type;
 
     public void setSrc(Address src) {
         this.src = src;
+    }
+
+    public void setDest(Address dest) {
+        this.dest = dest;
     }
 
     private Object body;
@@ -40,9 +45,8 @@ public class TransmitPackage implements Serializable {
 
     @Override
     public String toString() {
-        return "TransmitPackage{" +
-                "src=" + src +
-                ", type=" + type +
+        return "TP{[" + src.getLastAddr() + "->" + dest.getLastAddr() +
+                "] type=" + type +
                 ", body=" + body +
                 '}';
     }

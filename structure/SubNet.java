@@ -49,6 +49,6 @@ public class SubNet implements Serializable {
                 break;
             }
         }
-        System.out.println("nodeNo:"+nodeNo+"is removed");
+        System.out.println("nodeNo:"+nodeNo+" is removed！");
     }
 }

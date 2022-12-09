@@ -14,7 +14,7 @@ public class NetsMaintainPackage implements Serializable {
 
     @Override
     public String toString() {
-        return "NetsMaintainPackage{" +
+        return "NMP{" +
                 "type=" + type +
                 ", body=" + body +
                 '}';

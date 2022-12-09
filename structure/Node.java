@@ -36,6 +36,14 @@ public class Node implements Serializable {
         return netsList;
     }
 
+    @Override
+    public String toString() {
+        return "Node[" +
+                "no=" + no +
+                ", addr=" + address.getLastAddr() +
+                ']';
+    }
+
     public Address getAddress() {
         return address;
     }
