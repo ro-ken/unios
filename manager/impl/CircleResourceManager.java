@@ -113,7 +113,7 @@ public class CircleResourceManager extends ResourceManager {
     // send a heartbeat pkg to preNode indicate I am alive
     private void SelfIsAlive() {
         if (System.currentTimeMillis() - lastSendHeartBeatTime >= heartbeatInterval){
-            Address address = nextNode.getAddress();
+            Address address = preNode.getAddress();
             NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Heart, MyConfig.myAddress);
             TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
             context.sender.send(address,transmitPackage);  // send to nextNode address heartbeat
