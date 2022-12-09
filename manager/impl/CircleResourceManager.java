@@ -198,6 +198,8 @@ public class CircleResourceManager extends ResourceManager {
         TransmitPackage tp = new TransmitPackage(TransmitType.NetsMaintain,np);
         context.sender.boardCast(tp);
 
+        MyUtils.sleep(100);
+
         // synchronization the subnet to new node
         np = new NetsMaintainPackage(NetsMaintainType.JoinAck,subNet);
         tp = new TransmitPackage(TransmitType.NetsMaintain,np);
