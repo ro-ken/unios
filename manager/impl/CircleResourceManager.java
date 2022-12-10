@@ -141,7 +141,7 @@ public class CircleResourceManager extends ResourceManager {
     private void disposePackage(NetsMaintainPackage pkg) {
         switch (pkg.getType()){
             case Discover:disposeDiscover(pkg.getBody());  break;
-            case DiscoverAck:disposeDiscoverAck(pkg.getBody());  break;
+//            case DiscoverAck:disposeDiscoverAck(pkg.getBody());  break;//this stage should receive this package
             case Join:disposeJoin(pkg.getBody());   break;
             case JoinAck:disposeJoinAck(pkg.getBody());  break;
             case Heart:disposeHeart(pkg.getBody());   break;
