@@ -160,8 +160,11 @@ public class CircleResourceManager extends ResourceManager {
     private void disposeNodeAdd(Object body) {
         if (context.selfNode != null){
             Node node = (Node) body;
-            subNet.addNode(node);
-            updatePreNextNode();
+            // if node is myself ,don't add it
+            if (!context.selfNode.getAddress().equals(node.getAddress())){
+                subNet.addNode(node);
+                updatePreNextNode();
+            }
         }
     }
 
