@@ -41,6 +41,10 @@ public class SubNet implements Serializable {
         return nodeList.get(nodeList.size()-1);
     }
 
+    public int getListSize(){
+        return nodeList.size();
+    }
+
     // remove Node
     public void remove(Integer nodeNo) {
         for (int i = 0; i < nodeList.size(); i++) {

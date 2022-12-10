@@ -14,6 +14,16 @@ public class Node implements Serializable {
     private int no;     // 节点编号
     private List<Integer> netsList;     // 节点属于子网络集合
     private Address address;
+    private transient long lastGetHeartBeatTime;
+
+
+    public long getLastGetHeartBeatTime() {
+        return lastGetHeartBeatTime;
+    }
+
+    public void setLastGetHeartBeatTime(long lastGetHeartBeatTime) {
+        this.lastGetHeartBeatTime = lastGetHeartBeatTime;
+    }
 
     public Node(int no, List<Integer> netsList, Address address) {
         this.no = no;

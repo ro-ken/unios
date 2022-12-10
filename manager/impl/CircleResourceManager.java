@@ -21,34 +21,67 @@ import java.util.List;
  * @Description: TODO
  */
 public class CircleResourceManager extends ResourceManager {
-    private final PlatformContext context;
-    public static final long discoveryWaitTime = 500 ; // (ms)
-    public static final long heartbeatInterval = 1000 ; // (ms)
-    public static final long nodeDeadInterval = 3*heartbeatInterval ; // (ms)
-    public static final long threadSleepTime = 200 ; // (ms)
-    private long lastGetHeartBeatTime;
-    private long lastSendHeartBeatTime;
 
-    private SubNet subNet;
+    public static final long discoveryWaitTime = 500 ; // (ms)
+
+
+    private long lastGetHeartBeatTime;
+
 
     // heart pkg flow anticlockwise : preNode <- this <- preNode
     private Node preNode;
     private Node nextNode;
 
-
-    public CircleResourceManager() {
-        context = PlatformContext.getInstance();
-    }
-
     @Override
-    public void run() {
-        System.out.println("CircleResourceManager running!");
-
+    protected void networkEstablishment() {
         nodeDiscovery(); // boadCast self to find neighbor
         MyUtils.sleep(discoveryWaitTime);   // take a break wait other discovery ack package
         addToNets();  //  add to network group
-        netsMaintenance();  // make the nets keepAlive
     }
+
+    @Override
+    // to judge whether the next node is dead or not
+    protected void OthersIsAlive() {
+        if (System.currentTimeMillis() - lastGetHeartBeatTime > nodeDeadInterval){
+            System.out.println(nextNode + " is dead !");
+            int no = nextNode.getNo();
+            subNet.remove(no);
+            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.NodeDel, no);
+            TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
+            context.sender.boardCast(transmitPackage);  // board cast dead node no
+            updatePreNextNode();
+        }
+    }
+
+    @Override
+    // send a heartbeat pkg to preNode indicate I am alive
+    protected void SelfIsAlive() {
+        if (System.currentTimeMillis() - lastSendHeartBeatTime >= heartbeatInterval){
+            Address address = preNode.getAddress();
+            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Heart, MyConfig.myAddress);
+            TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
+            context.sender.send(address,transmitPackage);  // send to nextNode address heartbeat
+            updateSendHeartBeatTime();
+
+            if ("true".equals(MyConfig.get("printHeartBeat"))){
+                System.out.println("send heartbeat :" + address);
+            }
+        }
+    }
+
+    @Override
+    protected void disposePackage(NetsMaintainPackage pkg) {
+        switch (pkg.getType()){
+            case Discover:disposeDiscover(pkg.getBody());  break;
+//            case DiscoverAck:disposeDiscoverAck(pkg.getBody());  break;//this stage should receive this package
+            case Join:disposeJoin(pkg.getBody());   break;
+            case JoinAck:disposeJoinAck(pkg.getBody());  break;
+            case Heart:disposeHeart(pkg.getBody());   break;
+            case NodeAdd:disposeNodeAdd(pkg.getBody());  break;
+            case NodeDel:disposeNodeDel(pkg.getBody());  break;
+        }
+    }
+
 
     private void addToNets() {
         Object pkgBody = null;
@@ -67,7 +100,7 @@ public class CircleResourceManager extends ResourceManager {
             disposeDiscoverAck(pkgBody);
         } else{
            // didn't find other node,self create a network
-           createNetworkBySelf();
+           super.createNetworkBySelf();
         }
     }
 
@@ -75,80 +108,7 @@ public class CircleResourceManager extends ResourceManager {
         lastGetHeartBeatTime = System.currentTimeMillis();
     }
 
-    private void updateSendHeartBeatTime(){
-        lastSendHeartBeatTime = System.currentTimeMillis();
-    }
 
-
-    private void createNetworkBySelf() {
-        int netNo = 1;  // sub net number
-        List<Integer> sublist= new ArrayList<>(netNo);
-        context.selfNode = new Node(1,sublist,MyConfig.myAddress);
-
-        List<Node> lists = new ArrayList<>();
-        lists.add(context.selfNode);
-        SubNet subNet = new SubNet(netNo,lists);
-        this.subNet = subNet;
-        context.network.put(netNo,subNet);
-
-        System.out.println("create a new network");
-        MyUtils.printAllNodes(subNet);
-    }
-
-    private void netsMaintenance() {
-        while (true){
-            while (packageQueue.size() > 0){
-                NetsMaintainPackage netsMaintainPackage = poll();
-                disposePackage(netsMaintainPackage);
-            }
-            if (preNode != null && nextNode !=null){
-                SelfIsAlive();
-                whetherNextNodeDead();
-            }
-            // thread take a break
-            MyUtils.sleep(threadSleepTime);
-        }
-    }
-
-    // send a heartbeat pkg to preNode indicate I am alive
-    private void SelfIsAlive() {
-        if (System.currentTimeMillis() - lastSendHeartBeatTime >= heartbeatInterval){
-            Address address = preNode.getAddress();
-            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Heart, MyConfig.myAddress);
-            TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
-            context.sender.send(address,transmitPackage);  // send to nextNode address heartbeat
-            updateSendHeartBeatTime();
-
-            if ("true".equals(MyConfig.get("printHeartBeat"))){
-                System.out.println("send heartbeat :" + address);
-            }
-        }
-    }
-
-    // to judge whether the next node is dead or not
-    private void whetherNextNodeDead() {
-        if (System.currentTimeMillis() - lastGetHeartBeatTime > nodeDeadInterval){
-            System.out.println(nextNode + " is dead !");
-            int no = nextNode.getNo();
-            subNet.remove(no);
-            NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.NodeDel, no);
-            TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
-            context.sender.boardCast(transmitPackage);  // board cast dead node no
-            updatePreNextNode();
-        }
-    }
-
-    private void disposePackage(NetsMaintainPackage pkg) {
-        switch (pkg.getType()){
-            case Discover:disposeDiscover(pkg.getBody());  break;
-//            case DiscoverAck:disposeDiscoverAck(pkg.getBody());  break;//this stage should receive this package
-            case Join:disposeJoin(pkg.getBody());   break;
-            case JoinAck:disposeJoinAck(pkg.getBody());  break;
-            case Heart:disposeHeart(pkg.getBody());   break;
-            case NodeAdd:disposeNodeAdd(pkg.getBody());  break;
-            case NodeDel:disposeNodeDel(pkg.getBody());  break;
-        }
-    }
 
 
     private void disposeNodeDel(Object body) {
@@ -255,14 +215,6 @@ public class CircleResourceManager extends ResourceManager {
             context.sender.send(address,transmitPackage);  // send to target address self address
             System.out.println("disposeDiscover:"+address);
         }
-    }
-
-    // node board cast self address
-    private void nodeDiscovery(){
-        NetsMaintainPackage maintainPackage = new NetsMaintainPackage(NetsMaintainType.Discover, MyConfig.myAddress);
-        TransmitPackage transmitPackage = new TransmitPackage(TransmitType.NetsMaintain,maintainPackage);
-        context.sender.boardCast(transmitPackage);  // board cast self address
-        System.out.println("nodeDiscovery");
     }
 
 }

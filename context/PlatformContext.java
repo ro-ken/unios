@@ -3,6 +3,7 @@ package context;
 import application.ApplicationServer;
 import manager.ResourceManager;
 import manager.impl.CircleResourceManager;
+import manager.impl.MeshResourceManager;
 import scheduler.Scheduler;
 import scheduler.impl.RRScheduler;
 import structure.Node;
@@ -61,7 +62,8 @@ public class PlatformContext {
         sender = new UDPSender();
         receiver = new UDPReceiver();
         scheduler = new RRScheduler();
-        manager = new CircleResourceManager();
+//        manager = new CircleResourceManager();
+        manager = new MeshResourceManager();
         worker = new ApplicationServer();
         network = new HashMap<>();
     }
